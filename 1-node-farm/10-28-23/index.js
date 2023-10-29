@@ -34,7 +34,7 @@ const url = require("url");
 /////////////////////////////////////////////////////
 // Server
 const server = http.createServer((req, res) => {
-  console.log(req.url);
+  const pathName = req.url;
   res.end("Hello from the server!");
 });
 server.listen(8000, "127.0.0.1", () => {
