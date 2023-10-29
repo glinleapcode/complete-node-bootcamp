@@ -42,7 +42,10 @@ const server = http.createServer((req, res) => {
     res.end("This is the product page");
   } else if (pathName === "api") {
     res.end("API");
-    fs.readFile(`${__dirname}/dev-data/`);
+    fs.readFile(`${__dirname}/dev-data/data.json`, "utf-8", (err, data) => {
+      const productData = JSON.parse(data);
+      console.log(productData);
+    });
   } else {
     res.writeHead(404, {
       "Content-type": "text/html",
