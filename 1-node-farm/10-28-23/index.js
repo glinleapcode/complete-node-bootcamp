@@ -45,7 +45,7 @@ const server = http.createServer((req, res) => {
       "Content-type": "text/html",
       myheader: "hello-world",
     });
-    res.end("<h2> page not found <h2>");
+    res.end("<h1> page not found </h1>");
   }
 });
 server.listen(8000, "127.0.0.1", () => {
