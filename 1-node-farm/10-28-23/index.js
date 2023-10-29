@@ -41,7 +41,6 @@ const server = http.createServer((req, res) => {
   } else if (pathName === "/product") {
     res.end("This is the product page");
   } else if (pathName === "/api") {
-    res.end("API");
     fs.readFile(`${__dirname}/dev-data/data.json`, "utf-8", (err, data) => {
       const productData = JSON.parse(data);
       // console.log(productData);
