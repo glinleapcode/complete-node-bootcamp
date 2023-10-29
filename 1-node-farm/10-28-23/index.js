@@ -44,7 +44,8 @@ const server = http.createServer((req, res) => {
     res.end("API");
     fs.readFile(`${__dirname}/dev-data/data.json`, "utf-8", (err, data) => {
       const productData = JSON.parse(data);
-      console.log(productData);
+      // console.log(productData);
+      res.writeHead(200, { "content-type": "application/json" });
       res.end(data);
     });
   } else {
