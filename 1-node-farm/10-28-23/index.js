@@ -42,6 +42,7 @@ const server = http.createServer((req, res) => {
     res.end("This is the product page");
   } else if (pathName === "api") {
     res.end("API");
+    fs.readFile(`${__dirname}/dev-data/`);
   } else {
     res.writeHead(404, {
       "Content-type": "text/html",
