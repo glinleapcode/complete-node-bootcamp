@@ -44,6 +44,10 @@ const replaceTemplate = (temp, product) => {
   output = output.replace(/{%PRICE%}/g, product.price);
   output = output.replace(/{%DESCRIPTION%}/g, product.description);
   output = output.replace(/{%ID%}/g, product.id);
+
+  if (!product.organic) {
+    output = output.replace(/{%NOT_ORGANIC%}/g, product.id);
+  }
 };
 
 const tempOverview = fs.readFileSync(
