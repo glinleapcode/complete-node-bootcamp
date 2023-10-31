@@ -77,10 +77,8 @@ const server = http.createServer((req, res) => {
     const cardsHTML = dataObj
       .map((el) => replaceTemplate(tempCard, el))
       .join("");
-    console.log(cardsHTML);
-    cardsHTML.html;
-
-    res.end(tempOverview);
+    const output = tempOverview.replace("{%PRODUCT_CARDS%}", cardsHTML);
+    res.end(output);
 
     //Product page
   } else if (pathName === "/product") {
