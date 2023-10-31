@@ -35,6 +35,11 @@ const url = require("url");
 /////////////////////////////////////////////////////
 // Server
 
+const replaceTemplate = (temp, product) => {
+  let output = temp.replace("{%PRODUCTNAME%}/g", product.PRODUCTNAME);
+  output.replace();
+};
+
 const tempOverview = fs.readFileSync(
   `${__dirname}/templates/template-overview.html`,
   "utf-8"
