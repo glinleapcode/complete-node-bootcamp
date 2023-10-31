@@ -36,8 +36,10 @@ const url = require("url");
 // Server
 
 const replaceTemplate = (temp, product) => {
-  let output = temp.replace("{%PRODUCTNAME%}/g", product.PRODUCTNAME);
-  output.replace();
+  let output = temp.replace(/{%PRODUCTNAME%}/g, product.productName);
+  output = output.replace(/{%IMAGE%}/g, product.image);
+  output = output.replace(/{%IMAGE%}/g, product.image);
+  output = output.replace(/{%IMAGE%}/g, product.image);
 };
 
 const tempOverview = fs.readFileSync(
