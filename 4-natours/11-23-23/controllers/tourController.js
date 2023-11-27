@@ -1,37 +1,30 @@
 const fs = require('fs');
 const Tour = require('./../models/tourModel');
-const { errorMonitor } = require('events');
-const { isErrored } = require('stream');
-
-// const tours = JSON.parse(
-//   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
-// );
-
-// exports.checkID = (req, res, next, val) => {
-//   console.log(`Tour id is: ${val}`);
-
-//   if (req.params.id * 1 > tours.length) {
-//     return res.status(404).json({
-//       status: 'fail',
-//       message: 'Invalid ID'
-//     });
-//   }
-//   next();
-// };
-
-// exports.checkBody = (req, res, next) => {
-//   if (!req.body.name || !req.body.price) {
-//     return res.status(400).json({
-//       status: 'fail',
-//       message: 'Missing name or price'
-//     });
-//   }
-//   next();
-// };
 
 exports.getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find({});
+    console.log(req.query);
+    const queryObj = { ...req.query }; // make a copy of req.query
+    console.log(req.query);
+
+    // exclude some fields from queryObj
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    excludedFields.forEach(element => delete queryObj[element]);
+    // advanced filtering
+    // { difficulty: 'easy', duration: { $gte: 5 } }
+    // http://localhost:3000/api/v1/tours/?duration[gte]=5&difficulty=easy&limit=5&page=3
+    // { duration: { gte: '5' }, difficulty: 'easy' } need to convert gte to $gte
+    console.log(queryObj);
+    let queryStr = JSON.stringify(queryObj); // convert to string first
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+    console.log(queryStr);
+
+    //Build query
+    // const query = Tour.find(queryObj);
+    const query = Tour.find(JSON.parse(queryStr));
+
+    // execute query
+    const tours = await query;
     res.status(200).json({
       status: 'success',
       results: tours.length,
@@ -45,6 +38,21 @@ exports.getAllTours = async (req, res) => {
       message: err
     });
   }
+
+  // method 1: using query string and find()
+  // const tours = await Tour.find({
+  //   duration: req.query.duration,
+  //   difficulty: req.query.difficulty
+  // });
+
+  // const tours = await Tour.find(req.query);
+  // method 2: using mongoose query operators
+
+  // const tours = await Tour.find()
+  //   .where('duration')
+  //   .equals(req.query.duration)
+  //   .where('difficulty')
+  //   .equals(req.query.difficulty);
 };
 
 exports.getTour = async (req, res) => {
@@ -116,3 +124,29 @@ exports.deleteTour = async (req, res) => {
     });
   }
 };
+
+// const tours = JSON.parse(
+//   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
+// );
+
+// exports.checkID = (req, res, next, val) => {
+//   console.log(`Tour id is: ${val}`);
+
+//   if (req.params.id * 1 > tours.length) {
+//     return res.status(404).json({
+//       status: 'fail',
+//       message: 'Invalid ID'
+//     });
+//   }
+//   next();
+// };
+
+// exports.checkBody = (req, res, next) => {
+//   if (!req.body.name || !req.body.price) {
+//     return res.status(400).json({
+//       status: 'fail',
+//       message: 'Missing name or price'
+//     });
+//   }
+//   next();
+// };

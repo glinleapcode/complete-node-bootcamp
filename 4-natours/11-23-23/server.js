@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const app = require('./app');
 
 dotenv.config({ path: './config.env' });
+const app = require('./app');
 
 const DB_URL = process.env.DATABASE;
 
@@ -15,6 +15,11 @@ mongoose
     console.log('DB connection failed!');
     console.log(err);
   });
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`App running on port ${port}...`);
+});
 
 // const testTour = new Tour({
 //   name: 'The Forest Hiker',
@@ -30,8 +35,3 @@ mongoose
 //   .catch(err => {
 //     console.log('Error 🔥', err);
 //   });
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`App running on port ${port}...`);
-});
