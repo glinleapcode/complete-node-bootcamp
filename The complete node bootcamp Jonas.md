@@ -262,7 +262,7 @@ const tourSchema = new mongoose.Schema({
 });
 ```
 
-### Importing Development Data Into Database
+## Importing Development Data Into Database
 
 The following steps are used to import development data into DB so that the API can start with some data in DB and for testing purposes.
 
@@ -335,7 +335,7 @@ if (process.argv[2] === "--import") {
 }
 ```
 
-### Filtering
+## Filtering
 
 There are two ways to filter the data returned by the API.
 
@@ -417,7 +417,7 @@ exports.getAllTours = async (req, res) => {
 };
 ```
 
-### Advanced Filtering
+## Advanced Filtering
 
 - use `gte`, `gt`, `lte`, `lt` to filter the data by `price`. For example, `http://localhost:3000/api/v1/tours/?price[gte]=1000&price[lte]=1500` will return the tours with price between 1000 and 1500.
 - use `ne` to filter the data by `name`. For example, `http://localhost:3000/api/v1/tours/?name[ne]=The Snow Adventurer` will return the tours with name not equal to `The Snow Adventurer`.
@@ -476,5 +476,64 @@ exports.getAllTours = async (req, res) => {
   }
 };
 ```
+
+## Sorting
+
+- use `sort()` to sort the data. For example, `http://localhost:3000/api/v1/tours/?sort=price` will sort the data by price in ascending order. `http://localhost:3000/api/v1/tours/?sort=-price` will sort the data by price in descending order.
+- sort by multiple fields: `http://localhost:3000/api/v1/tours/?sort=price,ratingsAverage` will sort the data by price in ascending order and then sort the data by ratingsAverage in ascending order.
+
+  > [sort() API](<https://mongoosejs.com/docs/api/query.html#Query.prototype.sort()>)
+
+  ```javascript
+  // sort by "field" ascending and "test" descending
+  query.sort({ field: "asc", test: -1 });
+  // equivalent
+  query.sort("field -test");
+  // also possible is to use a array with array key-value pairs
+  query.sort([["field", "asc"]]);
+  ```
+
+> Example 1: sort by price in ascending order
+
+```javascript
+const queryObj = { ...req.query };
+// exclude some fields from queryObj
+const excludedFields = ["page", "sort", "limit", "fields"];
+excludedFields.forEach((element) => delete queryObj[element]);
+
+// advanced filtering
+console.log(queryObj);
+let queryStr = JSON.stringify(queryObj); // convert to string first
+queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+console.log(queryStr);
+//Build query
+//Convert the string to object
+let query = Tour.find(JSON.parse(queryStr));
+// sorting
+if (req.query.sort) {
+  query = query.sort(req.query.sort);
+}
+// Execute query
+const tours = await query;
+```
+
+> Example 2: sort by price in ascending order and then sort by ratingsAverage in ascending order
+
+```javascript
+...
+// sorting
+// postman: http://localhost:3000/api/v1/tours/?sort=price,ratingAverage
+if (req.query.sort) {
+  const sortBy = req.query.sort.split(",").join(" ");
+  query = query.sort(sortBy);
+} else {
+  // default sorting
+  query = query.sort("-createdAt"); // sort by createdAt in descending order, recent first
+}
+// Execute query
+const tours = await query;
+```
+
+## Limiting Fields
 
 # Section 9: Error Handling with Express

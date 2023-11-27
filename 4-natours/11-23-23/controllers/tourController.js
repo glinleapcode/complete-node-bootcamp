@@ -3,27 +3,32 @@ const Tour = require('./../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
-    console.log(req.query);
-    const queryObj = { ...req.query }; // make a copy of req.query
-    console.log(req.query);
-
+    // clean up queryObj
+    //shallow copy
+    const queryObj = { ...req.query };
     // exclude some fields from queryObj
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach(element => delete queryObj[element]);
+
     // advanced filtering
-    // { difficulty: 'easy', duration: { $gte: 5 } }
-    // http://localhost:3000/api/v1/tours/?duration[gte]=5&difficulty=easy&limit=5&page=3
-    // { duration: { gte: '5' }, difficulty: 'easy' } need to convert gte to $gte
-    console.log(queryObj);
+    // console.log(queryObj);
     let queryStr = JSON.stringify(queryObj); // convert to string first
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-    console.log(queryStr);
+    // console.log(queryStr);
 
     //Build query
-    // const query = Tour.find(queryObj);
-    const query = Tour.find(JSON.parse(queryStr));
+    //Convert the string to object
+    let query = Tour.find(JSON.parse(queryStr));
+    // sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      // default sorting
+      query = query.sort('-createdAt'); // sort by createdAt in descending order, recent first
+    }
 
-    // execute query
+    // Execute query
     const tours = await query;
     res.status(200).json({
       status: 'success',
