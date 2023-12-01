@@ -536,4 +536,37 @@ const tours = await query;
 
 ## Limiting Fields
 
+- use `select()` to select the fields that we want to return. For example, `http://localhost:3000/api/v1/tours/?fields=name,duration,difficulty,price` will return the tours with only the fields `name`, `duration`, `difficulty` and `price`.
+- use `-` to exclude a field. For example, `http://localhost:3000/api/v1/tours/?fields=-name,-duration,-difficulty,-price` will return the tours with all the fields except `name`, `duration`, `difficulty` and `price`.
+
+```javascript
+// tourController.js
+...
+// sorting
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      // default sorting
+      query = query.sort('-createdAt'); // sort by createdAt in descending order, recent first
+    }
+    // field limiting
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      query = query.select(fields);
+    } else {
+      // exclude __v field
+      query = query.select('-__v');
+    }
+     // Execute query
+    const tours = await query;
+    ...
+```
+
+## Pagination
+
+- use `skip()` and `limit()` to implement pagination. For example, `http://localhost:3000/api/v1/tours/?page=2&limit=10` will return the second page with 10 documents per page.
+- use `const page = req.query.page * 1 || 1` to get the page number from the query string. If the page number is not specified in the query string, the default page number is 1.
+- use `const limit = req.query.limit * 1 || 100` to get the limit from the query string. If the limit is not specified in the query string, the default limit is 100.
+
 # Section 9: Error Handling with Express

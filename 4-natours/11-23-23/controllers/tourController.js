@@ -28,6 +28,16 @@ exports.getAllTours = async (req, res) => {
       query = query.sort('-createdAt'); // sort by createdAt in descending order, recent first
     }
 
+    // field limiting
+    // postman: http://localhost:3000/api/v1/tours/?fields=name, duration,difficulty, price
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      query = query.select(fields);
+    } else {
+      // exclude __v field
+      query = query.select('-__v');
+    }
+
     // Execute query
     const tours = await query;
     res.status(200).json({
