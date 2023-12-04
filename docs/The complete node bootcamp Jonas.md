@@ -18,6 +18,160 @@ console.log("File written!");
 
 # Section 5: Asynchronous JavaScript: Promises and Async/Await
 
+## The Problem with Callbacks: Callback Hell
+
+- Callback Hell is a situation where we have a lot of nested callbacks. This makes the code hard to read and maintain.
+
+```javascript
+const fs = require('fs');
+const superagent = require('superagent');
+
+fs.readFile(`${__dirname}/dog.txt`, (err, data) => {
+  console.log(`Breed: ${data}`);
+
+  superagent
+    .get(`https://dog.ceo/api/breed/${data}/images/random`)
+    .end((err, res) => {
+      if (err) return console.log(err.message);
+      console.log(res.body.message);
+
+      fs.writeFile('dog-img.txt', res.body.message, (err) => {
+        console.log('Random dog image saved to file!');
+      });
+    });
+});
+```
+
+- The first callback is passed to `fs.readFile()`. This function reads a file and then calls the provided callback function with the contents of the file when it is done.
+- Inside the first callback, there is a second callback. The second callback is passed to `superagent.get()`. This function makes a HTTP request and then calls the provided callback function with the response when it is done.
+- Again, inside the second callback, there is a third callback. There is a call to `fs.writeFile()`, which writes the response to a file and then calls the provided callback function when it is done.
+- So the callbacks are nested because each one is defined inside the previous one. This is called callback hell.
+
+## From Callback Hell to Promises
+
+- A promise is an object that is used as a placeholder for the future result of an asynchronous operation.
+- We can modify the code above to use promises instead of callbacks.
+
+```javascript
+fs.readFile(`${__dirname}/dog.txt`, (err, data) => {
+  console.log(`Breed: ${data}`);
+
+  superagent
+    .get(`https://dog.ceo/api/breed/${data}/images/random`)
+    .then((res) => {
+      console.log(res.body.message);
+
+      fs.writeFile('dog-img.txt', res.body.message, (err) => {
+        console.log('Random dog image saved to file!');
+      });
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+});
+```
+
+- This version uses Promises to handle the asynchronous HTTP request made with `superagent.get()`., which helps avoid callback hell for that part of the code. However, we still have callback hell for the `fs.writeFile()` part of the code.
+
+## Building Promises
+
+- We can rewrite the code above to use promises for the `fs.readFile()` and `fs.writeFile()` parts of the code.
+- The trick to be able to chain all the `then` methods is to return a promise before calling them.
+- The readFilePromise returns a promise and we call the then method on the promise returned by the readFilePromise and we have access to the data returned by the readFilePromise, which is the dog breed.
+- Then we use the dog breed to make a HTTP request to get the dog image and return a promise. We call the `then` method on the promise returned by the superagent HTTP request and we have access to the image link from the superagent API.
+- Then we write the image url to a file and return a promise.
+- We call the then method on the promise returned by the writeFilePromise and we have access to the message "successfully write the image data to file" returned by the writeFilePromise.
+
+```javascript
+const readFilePromise = (file) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(file, (err, data) => {
+      if (err) reject('Could not find the file');
+      resolve(data);
+    });
+  });
+};
+
+const writeFilePromise = (file, data) => {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(file, data, (err, data) => {
+      if (err) reject('Could not write the file');
+      resolve('successfully write the image data to file');
+    });
+  });
+};
+
+readFilePromise(`${__dirname}/dog.txt`)
+  .then((data) => {
+    console.log(`Breed: ${data}`);
+    return superagent.get(`https://dog.ceo/api/breed/${data}/images/random`); // return a promise
+  })
+  .then((res) => {
+    console.log(res.body.message); // we have access to the image link from the superagent API
+    return writeFilePromise('dog-img.txt', res.body.message); // return a promise
+  })
+  .then((message) => {
+      console.log(message); // successfully write the image data to file
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
+```
+
+## Consuming Promises with Async/Await
+
+- The `async` keyword means that this is a special type of function that is asynchronous. Basically it keeps running in the background while the rest of the code keeps executing.
+- The `async` keyword automatically returns a promise. So we don't need to create a promise manually.
+- We can have multiple `await` statements in an `async` function. The `await` keyword is used to wait for a promise to be resolved or rejected. The `await` keyword can only be used inside an `async` function.
+- The await stops the code execution until the promise is resolved or rejected. So we can use the result of the promise directly without using the `then` method.
+
+```javascript
+const readFilePromise = (file) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(file, (err, data) => {
+      if (err) reject('Could not find the file');
+      resolve(data);
+    });
+  });
+};
+
+const writeFilePromise = (file, data) => {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(file, data, (err, data) => {
+      if (err) reject('Could not write the file');
+      resolve('successfully write the image data to file');
+    });
+  });
+};
+
+const getDogPic = async () => {
+  try {
+    // 1. get the dog breed from the dog.txt
+    const data = await readFilePromise(`${__dirname}/dog.txt`);
+    console.log(`Breed: ${data}`);
+
+    //2. send a http request to get dog picture
+    const res = await superagent.get(
+      `https://dog.ceo/api/breed/${data}/images/random`
+    );
+    console.log(res.body.message);
+
+    //3. write the picture link to dog-img.txt file
+    await writeFilePromise('dog-img.txt', res.body.message);
+    console.log('Successfully saved image link to file');
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+getDogPic();
+
+```
+
+## Returning Values from Async Functions
+
+## Waiting for Multiple Promises Simultaneously
+
 # Section 6: Express
 
 # Section 7: MongoDB
